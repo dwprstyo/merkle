@@ -1,8 +1,6 @@
 import * as React from "react";
 import AppBar from "@mui/material/AppBar";
-import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
-import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
 import CssBaseline from "@mui/material/CssBaseline";
 import Grid from "@mui/material/Grid";
@@ -13,45 +11,50 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 const theme = createTheme();
 
-export default function Home() {
-  const navigate = useNavigate();
+export default function Detail() {
   const baseUrl = useSelector((state) => state.baseUrl);
-  const [users, setUsers] = useState([]);
+  const params = useParams();
+  const [user, setUser] = useState({
+    id: 0,
+    email:'',
+    username:'',
+    password:'',
+    name:{
+        firstname:'',
+        lastname:''
+    },
+    address:{
+        city:'',
+        street:'',
+        number: 0,
+        zipcode:'',
+        geolocation:{
+            lat:'',
+            long:''
+        }
+    },
+    phone:''
+});
 
   useEffect(() => {
-    getAll();
+    getUser();
   });
 
-  const handleView = (key) => {
-    navigate(`/detail/${key}`);
-  };
-
-  const handleEdit = (key) => {
-    navigate(`/edit/${key}`);
-  };
-
-  const handleDelete = (key) => {
+  const getUser = () => {
+    const { id } = params;
     axios
-      .delete(`${baseUrl}/users/${key}`)
+      .get(`${baseUrl}/users/${id}`)
       .then((res) => {
-        getAll();
-        console.log(res);
+        const data = res.data
+        setUser(data);
       })
       .catch((err) => {});
   };
 
-  const getAll = () => {
-    axios
-      .get(`${baseUrl}/users?limit=6`)
-      .then((res) => {
-        setUsers(res.data);
-      })
-      .catch((err) => {});
-  };
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -64,9 +67,9 @@ export default function Home() {
       </AppBar>
       <main>
         <Container sx={{ py: 8 }} maxWidth="md">
+          {/* End hero unit */}
           <Grid container spacing={4}>
-            {users.map((data, key) => (
-              <Grid item key={key} xs={12} sm={6} md={4}>
+              <Grid item  xs={12} sm={12} md={12}>
                 <Card
                   sx={{
                     height: "100%",
@@ -76,34 +79,22 @@ export default function Home() {
                 >
                   <CardContent sx={{ flexGrow: 1 }}>
                     <Typography gutterBottom variant="h5" component="h2">
-                      {data.name.firstname} {data.name.lastname}
+                      {user.name.firstname} {user.name.lastname}
                     </Typography>
                     <Typography>
-                      City : {data.address.city}
+                      City : {user.address.city}
                       <br />
-                      Street : {data.address.street}
+                      Street : {user.address.street}
                       <br />
-                      Number : {data.address.number}
+                      Number : {user.address.number}
                       <br />
-                      Zip Code : {data.address.zipcode}
+                      Zip Code : {user.address.zipcode}
                       <br />
-                      Phone : {data.phone}
+                      Phone : {user.phone}
                     </Typography>
                   </CardContent>
-                  <CardActions>
-                    <Button size="small" onClick={() => handleView(data.id)}>
-                      View
-                    </Button>
-                    <Button size="small" onClick={() => handleEdit(data.id)}>
-                      Edit
-                    </Button>
-                    <Button size="small" onClick={() => handleDelete(data.id)}>
-                      Delete
-                    </Button>
-                  </CardActions>
                 </Card>
               </Grid>
-            ))}
           </Grid>
         </Container>
       </main>
